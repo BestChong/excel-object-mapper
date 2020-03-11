@@ -10,8 +10,8 @@ repositories {
     mavenCentral()
 }
 
-group = 'io.github.millij'
-version = '2.0.0-SNAPSHOT'
+group = 'io.github.funpad'
+version = '2.0.0'
 
 
 dependencies {
@@ -20,10 +20,10 @@ dependencies {
     // ----------------------------------------------------------------------------------
 
     // Slf4j
-    compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.12'
+    compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.26'
 
     // Apache Commons
-    compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.5'
+    compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.9'
     compile group: 'commons-beanutils', name: 'commons-beanutils', version: '1.9.3'
 
     // Apache POI
@@ -34,7 +34,7 @@ dependencies {
     // Test compile
     // ----------------------------------------------------------------------------------
 
-    testCompile group: 'org.slf4j', name: 'slf4j-log4j12', version: '1.7.12'
+    testCompile group: 'org.slf4j', name: 'slf4j-log4j12', version: '1.7.26'
 
     testCompile group: 'junit', name: 'junit', version: '4.12'
 
@@ -111,7 +111,7 @@ uploadArchives {
 
             // Sign Artifacts before deploying
             beforeDeployment {
-                MavenDeployment deployment -> signing.signPom(deployment) 
+                MavenDeployment deployment -> signing.signPom(deployment)
             }
 
             // Staging Repo
@@ -127,15 +127,15 @@ uploadArchives {
 
             // Project Info to generate POM
             pom.project {
-                name 'Object Mapper for Apache POI'
+                name 'Simple Object Mapper for Apache POI'
                 packaging 'jar'
-                description 'Objects mapper for Office formats - Excel files, Spreadsheets, etc. '
-                url 'https://millij.github.io/poi-object-mapper/'
+                description 'Objects mapper for Microsoft Office formats - Excel files, Spreadsheets, etc. '
+                url 'https://funpad.github.io/excel-object-mapper/'
 
                 scm {
-                    url 'https://github.com/millij/poi-object-mapper.git'
-                    connection 'scm:git:https://github.com/millij/poi-object-mapper.git'
-                    developerConnection 'scm:git:https://github.com/millij/poi-object-mapper.git'
+                    url 'https://github.com/funpad/excel-object-mapper.git'
+                    connection 'scm:git:https://github.com/funpad/excel-object-mapper.git'
+                    developerConnection 'scm:git:https://github.com/funpad/excel-object-mapper.git'
                 }
 
                 licenses {
@@ -147,9 +147,9 @@ uploadArchives {
 
                 developers {
                     developer {
-                        id 'millij'
-                        name 'Gowri Shankar'
-                        email 'gowrishankar.milli@gmail.com'
+                        id 'funpad'
+                        name 'James Fang'
+                        email 'funpad88@gmail.com'
                     }
                 }
             }   // POM

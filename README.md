@@ -1,36 +1,36 @@
 
-[![Build Status](https://travis-ci.org/millij/poi-object-mapper.svg?branch=master)](https://travis-ci.org/millij/poi-object-mapper)
-[![codecov](https://codecov.io/gh/millij/poi-object-mapper/branch/master/graph/badge.svg)](https://codecov.io/gh/millij/poi-object-mapper)
+[![Build Status](https://travis-ci.org/funpad/excel-object-mapper.svg?branch=master)](https://travis-ci.org/funpad/excel-object-mapper)
+[![codecov](https://codecov.io/gh/funpad/excel-object-mapper/branch/master/graph/badge.svg)](https://codecov.io/gh/funpad/excel-object-mapper)
 
 
-# poi-object-mapper
+# excel-object-mapper
 
-**poi-object-mapper** is a wrapper java library for [Apache POI](https://poi.apache.org/) (Apache POI provides java API to read Microsoft Office Formats). POI APIs are very low level giving acess to all the internals of the file formats.
+**excel-object-mapper** is a wrapper java library for [Apache POI](https://poi.apache.org/) (Apache POI provides java API to read Microsoft Office Formats). POI APIs are very low level giving acess to all the internals of the file formats.
 
 The aim of this project is to provide easy to use highlevel APIs to read the Office file formats by wrapping the POI APIs. In simple terms, the wrapper APIs would look similar to the [Jackson Project for XML and JSON](https://github.com/FasterXML/jackson), where the data can be mapped to a JAVA Bean and through the mapper APIs, the file data can directly be read as java objects.
 
-*- Note that the current version of the library supports only  **spreadsheets**  (Excel files).*
+*- Note that the library supports only  **spreadsheets**  (Excel files).*
 
 
 ## Include
 
-This library is available in [Maven Central](https://mvnrepository.com/artifact/io.github.millij/poi-object-mapper). 
+This library is available in [Maven Central](https://mvnrepository.com/artifact/io.github.funpad/excel-object-mapper). 
 
 `pom.xml` entry details..
 
 ```
 <dependency>
-    <groupId>io.github.millij</groupId>
-    <artifactId>poi-object-mapper</artifactId>
-    <version>1.0.0</version>
+    <groupId>io.github.funpad</groupId>
+    <artifactId>excel-object-mapper</artifactId>
+    <version>2.0.0</version>
 </dependency>
 ```
 
-To install manually, please check the [releases](https://github.com/millij/poi-object-mapper/releases) page for available versions and  change log.
+To install manually, please check the [releases](https://github.com/funpad/excel-object-mapper/releases) page for available versions and  change log.
 
 #### Dependencies
 
-The current implementation uses **POI version 4.0.1**.
+The current implementation uses **POI version 4.1.2**.
 
 
 ## Usage
@@ -105,7 +105,7 @@ Reading spreadsheet rows as objects ..
 
 ## Issues
 
-The known issues are already listed under [Issues Section](https://github.com/millij/poi-object-mapper/issues).
+The known issues are already listed under [Issues Section](https://github.com/funpad/excel-object-mapper/issues).
 
 Please add there your bugs findings, feature requests, enhancements etc. 
 
