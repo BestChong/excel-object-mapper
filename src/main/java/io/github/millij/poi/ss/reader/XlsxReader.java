@@ -4,9 +4,9 @@ import static io.github.millij.poi.util.Beans.isInstantiableType;
 
 import java.io.InputStream;
 
-import org.apache.poi.ooxml.util.SAXHelper;
 import org.apache.poi.openxml4j.opc.OPCPackage;
 import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.util.XMLHelper;
 import org.apache.poi.xssf.eventusermodel.ReadOnlySharedStringsTable;
 import org.apache.poi.xssf.eventusermodel.XSSFReader;
 import org.apache.poi.xssf.eventusermodel.XSSFSheetXMLHandler;
@@ -66,7 +66,7 @@ public class XlsxReader extends AbstractSpreadsheetReader {
             ContentHandler handler = new XSSFSheetXMLHandler(styles, ssTable, sheetHandler, true);
 
             // XML Reader
-            XMLReader xmlParser = SAXHelper.newXMLReader();
+            XMLReader xmlParser = XMLHelper.newXMLReader();
             xmlParser.setContentHandler(handler);
 
             // Iterate over sheets
@@ -110,7 +110,7 @@ public class XlsxReader extends AbstractSpreadsheetReader {
             ContentHandler handler = new XSSFSheetXMLHandler(styles, ssTable, sheetHandler, true);
 
             // XML Reader
-            XMLReader xmlParser = SAXHelper.newXMLReader();
+            XMLReader xmlParser = XMLHelper.newXMLReader();
             xmlParser.setContentHandler(handler);
 
             // Iterate over sheets
@@ -134,7 +134,5 @@ public class XlsxReader extends AbstractSpreadsheetReader {
             throw new SpreadsheetReadException(errMsg, ex);
         }
     }
-
-
 
 }
