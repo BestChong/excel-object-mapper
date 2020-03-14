@@ -47,64 +47,30 @@ public class XlsxReader extends AbstractSpreadsheetReader {
     @Override
     public <T> void read(Class<T> beanClz, InputStream is, RowListener<T> listener)
             throws SpreadsheetReadException {
-        // Sanity checks
-        if (!isInstantiableType(beanClz)) {
-            throw new IllegalArgumentException("XlsxReader :: Invalid bean type passed !");
-        }
-
-        try {
-            final OPCPackage opcPkg = OPCPackage.open(is);
-
-            // XSSF Reader
-            XSSFReader xssfReader = new XSSFReader(opcPkg);
-
-            // Content Handler
-            StylesTable styles = xssfReader.getStylesTable();
-            ReadOnlySharedStringsTable ssTable = new ReadOnlySharedStringsTable(opcPkg);
-            SheetContentsHandler sheetHandler = new RowContentsHandler<T>(beanClz, listener, 0);
-
-            ContentHandler handler = new XSSFSheetXMLHandler(styles, ssTable, sheetHandler, true);
-
-            // XML Reader
-            XMLReader xmlParser = XMLHelper.newXMLReader();
-            xmlParser.setContentHandler(handler);
-
-            // Iterate over sheets
-            XSSFReader.SheetIterator worksheets = (XSSFReader.SheetIterator) xssfReader.getSheetsData();
-            for (int i = 0; worksheets.hasNext(); i++) {
-                InputStream sheetInpStream = worksheets.next();
-
-                String sheetName = worksheets.getSheetName();
-
-                // Parse sheet
-                xmlParser.parse(new InputSource(sheetInpStream));
-                sheetInpStream.close();
-            }
-        } catch (Exception ex) {
-            String errMsg = String.format("Error reading sheet data, to Bean %s : %s", beanClz, ex.getMessage());
-            LOGGER.error(errMsg, ex);
-            throw new SpreadsheetReadException(errMsg, ex);
-        }
+        readBySheetNo(beanClz, is, null, listener);
     }
 
 
     @Override
     public <T> void read(Class<T> beanClz, InputStream is, int sheetNo, RowListener<T> listener)
             throws SpreadsheetReadException {
+        readBySheetNo(beanClz, is, sheetNo, listener);
+    }
+
+    private <T> void readBySheetNo(Class<T> beanClz, InputStream is, Integer sheetNo, RowListener<T> listener)
+            throws SpreadsheetReadException {
         // Sanity checks
         if (!isInstantiableType(beanClz)) {
             throw new IllegalArgumentException("XlsxReader :: Invalid bean type passed !");
         }
 
-        try {
-            final OPCPackage opcPkg = OPCPackage.open(is);
-
+        try (final OPCPackage opcPkg = OPCPackage.open(is)) {
             // XSSF Reader
             XSSFReader xssfReader = new XSSFReader(opcPkg);
 
             // Content Handler
             StylesTable styles = xssfReader.getStylesTable();
-            ReadOnlySharedStringsTable ssTable = new ReadOnlySharedStringsTable(opcPkg);
+            ReadOnlySharedStringsTable ssTable = new ReadOnlySharedStringsTable(opcPkg, false);
             SheetContentsHandler sheetHandler = new RowContentsHandler<T>(beanClz, listener, 0);
 
             ContentHandler handler = new XSSFSheetXMLHandler(styles, ssTable, sheetHandler, true);
@@ -116,18 +82,16 @@ public class XlsxReader extends AbstractSpreadsheetReader {
             // Iterate over sheets
             XSSFReader.SheetIterator worksheets = (XSSFReader.SheetIterator) xssfReader.getSheetsData();
             for (int i = 0; worksheets.hasNext(); i++) {
-                InputStream sheetInpStream = worksheets.next();
-                if (i != sheetNo) {
-                    continue;
+                try (InputStream sheetInpStream = worksheets.next()) {
+                    // If sheetNo is specified, skip non-specific sheets.
+                    if (sheetNo != null && sheetNo != i) {
+                        continue;
+                    }
+                    LOGGER.info("Reading the sheet {}.", i);
+                    // Parse Sheet
+                    xmlParser.parse(new InputSource(sheetInpStream));
                 }
-
-                String sheetName = worksheets.getSheetName();
-
-                // Parse Sheet
-                xmlParser.parse(new InputSource(sheetInpStream));
-                sheetInpStream.close();
             }
-
         } catch (Exception ex) {
             String errMsg = String.format("Error reading sheet %d, to Bean %s : %s", sheetNo, beanClz, ex.getMessage());
             LOGGER.error(errMsg, ex);
