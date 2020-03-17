@@ -1,23 +1,24 @@
 package io.github.millij.poi.ss.handler;
 
+import io.github.millij.poi.ss.model.ColumnMapping;
+import io.github.millij.poi.ss.model.SheetRow;
 import io.github.millij.poi.util.Spreadsheet;
+import lombok.extern.slf4j.Slf4j;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-
+/**
+ * Row contents handler.
+ *
+ * @param <T> Class Type
+ * @author milli, Fang Gang
+ */
+@Slf4j
 public class RowContentsHandler<T> extends AbstractSheetContentsHandler {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(RowContentsHandler.class);
 
     private final Class<T> beanClz;
 
     private final int headerRow;
-    private final Map<String, String> cellPropertyMap;
+
+    private ColumnMapping<T> columnMapping;
 
     private final RowListener<T> rowListener;
 
@@ -33,10 +34,7 @@ public class RowContentsHandler<T> extends AbstractSheetContentsHandler {
         super();
 
         this.beanClz = beanClz;
-
         this.headerRow = headerRow;
-        this.cellPropertyMap = new HashMap<String, String>();
-
         this.rowListener = rowListener;
     }
 
@@ -46,17 +44,18 @@ public class RowContentsHandler<T> extends AbstractSheetContentsHandler {
 
     @Override
     void beforeRowStart(int rowNum) {
-        // Row Callback
-        // rowListener.beforeRow(rowNum);
+        log.debug("Start reading row - {}.", rowNum);
     }
 
 
     @Override
-    void afterRowEnd(int rowNum, Map<String, Object> rowDataMap) {
+    void afterRowEnd(final SheetRow sheetRow) {
         // Sanity Checks
-        if (rowDataMap == null || rowDataMap.isEmpty()) {
+        if (sheetRow == null || sheetRow.isEmpty()) {
             return;
         }
+
+        final int rowNum = sheetRow.getRowNum();
 
         // Skip rows before header row
         if (rowNum < headerRow) {
@@ -64,48 +63,20 @@ public class RowContentsHandler<T> extends AbstractSheetContentsHandler {
         }
 
         if (rowNum == headerRow) {
-            final Map<String, String> headerMap = this.prepareHeaderMap(rowNum, rowDataMap);
-            cellPropertyMap.putAll(headerMap);
+            columnMapping = new ColumnMapping(beanClz, sheetRow);
             return;
         }
 
         // Row As Bean
-        T rowBean = Spreadsheet.rowAsBean(beanClz, cellPropertyMap, rowDataMap);
+        T rowBean = Spreadsheet.rowAsBean(sheetRow, columnMapping);
 
         // Row Callback
         try {
             rowListener.row(rowNum, rowBean);
         } catch (Exception ex) {
-            String errMsg = String.format("Error calling listener callback  row - %d, bean - %s", rowNum, rowBean);
-            LOGGER.error(errMsg, ex);
+            String errMsg = String.format("Error calling listener callback row - %d, bean - %s", rowNum, rowBean);
+            throw new RuntimeException(errMsg, ex);
         }
     }
-
-
-    // Private Methods
-    // ------------------------------------------------------------------------
-
-    private Map<String, String> prepareHeaderMap(int rowNo, Map<String, Object> rowDataMap) {
-        // Sanity checks
-        if (rowDataMap == null || rowDataMap.isEmpty()) {
-            String errMsg = String.format("Invalid Header data found - Row #%d", rowNo);
-            throw new RuntimeException(errMsg);
-        }
-
-        final Map<String, String> colToBeanPropMap = Spreadsheet.getColumnToPropertyMap(beanClz);
-
-        final Map<String, String> headerMap = new HashMap<String, String>();
-        for (String collRef : rowDataMap.keySet()) {
-            String colName = String.valueOf(rowDataMap.get(collRef));
-            String propName = colToBeanPropMap.get(colName);
-            if (StringUtils.isNotEmpty(propName)) {
-                headerMap.put(collRef, String.valueOf(propName));
-            }
-        }
-
-        LOGGER.debug("Header DataMap prepared : {}", headerMap);
-        return headerMap;
-    }
-
 
 }

@@ -29,6 +29,9 @@ dependencies {
     // Apache POI
     compile group: 'org.apache.poi', name: 'poi', version: '4.1.2'
     compile group: 'org.apache.poi', name: 'poi-ooxml', version: '4.1.2'
+    
+    // Lombok
+    compile group: 'org.projectlombok', name: 'lombok', version: '1.18.8'
 
 
     // Test compile

@@ -1,6 +1,7 @@
 package io.github.millij.poi.ss.reader;
 
 import io.github.millij.bean.Company;
+import io.github.millij.bean.CompetitionData;
 import io.github.millij.bean.Employee;
 import io.github.millij.poi.SpreadsheetReadException;
 import io.github.millij.poi.ss.handler.RowListener;
@@ -29,6 +30,7 @@ public class XlsxReaderTest {
     // XLSX
     private String _filepath_xlsx_single_sheet;
     private String _filepath_xlsx_multiple_sheets;
+    private String _filepath_xlsx_competition;
 
 
     // Setup
@@ -39,6 +41,7 @@ public class XlsxReaderTest {
         // sample files
         _filepath_xlsx_single_sheet = "src/test/resources/sample-files/xlsx_sample_single_sheet.xlsx";
         _filepath_xlsx_multiple_sheets = "src/test/resources/sample-files/xlsx_sample_multiple_sheets.xlsx";
+        _filepath_xlsx_competition = "src/test/resources/sample-files/competition_data.xlsx";
     }
 
     @After
@@ -54,18 +57,49 @@ public class XlsxReaderTest {
     // Read from file
 
     @Test
-    public void test_read_xlsx_single_sheet() throws SpreadsheetReadException {
+    public void test_read_xlsx_single_sheet() throws SpreadsheetReadException, FileNotFoundException {
         // Excel Reader
         LOGGER.info("test_read_xlsx_single_sheet :: Reading file - {}", _filepath_xlsx_single_sheet);
         XlsxReader reader = new XlsxReader();
 
+        // Result
+        final List<Employee> employees = new ArrayList<Employee>();
         // Read
-        List<Employee> employees = reader.read(Employee.class, new File(_filepath_xlsx_single_sheet));
+        reader.read(Employee.class,
+                new FileInputStream(new File(_filepath_xlsx_single_sheet)),
+                (rowNum, rowObj) -> {
+            if (rowObj == null) {
+                LOGGER.error("Null object returned for row : {}", rowNum);
+                return;
+            }
+            if (rowObj.getAddress() == null) {
+                LOGGER.error("Callback: Null address returned for row : {}", rowNum);
+            }
+
+            employees.add(rowObj);
+        });
         Assert.assertNotNull(employees);
         Assert.assertTrue(employees.size() > 0);
 
         for (Employee emp : employees) {
             LOGGER.info("test_read_xlsx_single_sheet :: Output - {}", emp);
+        }
+    }
+
+    @Test
+    public void test_read_competition_xlsx() throws SpreadsheetReadException {
+        // Excel Reader
+        LOGGER.info("test_read_xlsx_single_sheet :: Reading file - {}", _filepath_xlsx_competition);
+        XlsxReader reader = new XlsxReader();
+
+        // Read
+        List<CompetitionData> employees = reader.read(CompetitionData.class, new File(_filepath_xlsx_competition));
+        Assert.assertNotNull(employees);
+        Assert.assertTrue(employees.size() > 0);
+
+//        LOGGER.info("Done");
+        for (CompetitionData emp : employees) {
+            LOGGER.info(":: Output - {}", emp);
         }
     }
 
