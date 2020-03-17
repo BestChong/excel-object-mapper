@@ -11,7 +11,8 @@ import java.util.List;
 /**
  * An Abstract representation of a Spreadsheet Reader. Any reader implementation (HSSF or XSSF) is
  * expected to implement and provide the below APIs.
- * 
+ *
+ * @author milli
  */
 public interface SpreadsheetReader {
 
@@ -21,17 +22,17 @@ public interface SpreadsheetReader {
     /**
      * Reads the spreadsheet file to beans of the given type. This method will attempt to read all
      * the available sheets of the file and creates the objects of the passed type.
-     * 
+     *
      * <p>
      * The {@link RowListener} implementation callback gets triggered after reading each Row. Best
      * Suited for reading Large files in restricted memory environments.
      * </p>
-     * 
+     *
      * @param <T> The Parameterized bean Class.
      * @param beanClz The Class type to deserialize the rows data
      * @param file {@link File} object of the spreadsheet file
      * @param listener Custom {@link RowListener} implementation for row data callbacks.
-     * 
+     *
      * @throws SpreadsheetReadException an exception is thrown in cases where the file data is not
      *         readable or row data to bean mapping failed.
      */
@@ -41,17 +42,17 @@ public interface SpreadsheetReader {
     /**
      * Reads the spreadsheet file to beans of the given type. This method will attempt to read all
      * the available sheets of the file and creates the objects of the passed type.
-     * 
+     *
      * <p>
      * The {@link RowListener} implementation callback gets triggered after reading each Row. Best
      * Suited for reading Large files in restricted memory environments.
      * </p>
-     * 
+     *
      * @param <T> The Parameterized bean Class.
      * @param beanClz The Class type to deserialize the rows data
      * @param is {@link InputStream} of the spreadsheet file
      * @param listener Custom {@link RowListener} implementation for row data callbacks.
-     * 
+     *
      * @throws SpreadsheetReadException an exception is thrown in cases where the file data is not
      *         readable or row data to bean mapping failed.
      */
@@ -61,18 +62,18 @@ public interface SpreadsheetReader {
     /**
      * Reads the spreadsheet file to beans of the given type. Note that only the requested sheet
      * (sheet numbers are indexed from 0) will be read.
-     * 
+     *
      * <p>
      * The {@link RowListener} implementation callback gets triggered after reading each Row. Best
      * Suited for reading Large files in restricted memory environments.
      * </p>
-     * 
+     *
      * @param <T> The Parameterized bean Class.
      * @param beanClz The Class type to deserialize the rows data
      * @param file {@link File} object of the spreadsheet file
      * @param sheetNo index of the Sheet to be read (index starts from 0)
      * @param listener Custom {@link RowListener} implementation for row data callbacks.
-     * 
+     *
      * @throws SpreadsheetReadException an exception is thrown in cases where the file data is not
      *         readable or row data to bean mapping failed.
      */
@@ -82,18 +83,18 @@ public interface SpreadsheetReader {
     /**
      * Reads the spreadsheet file to beans of the given type. Note that only the requested sheet
      * (sheet numbers are indexed from 0) will be read.
-     * 
+     *
      * <p>
      * The {@link RowListener} implementation callback gets triggered after reading each Row. Best
      * Suited for reading Large files in restricted memory environments.
      * </p>
-     * 
+     *
      * @param <T> The Parameterized bean Class.
      * @param beanClz The Class type to deserialize the rows data
      * @param is {@link InputStream} of the spreadsheet file
      * @param sheetNo index of the Sheet to be read (index starts from 0)
      * @param listener Custom {@link RowListener} implementation for row data callbacks.
-     * 
+     *
      * @throws SpreadsheetReadException an exception is thrown in cases where the file data is not
      *         readable or row data to bean mapping failed.
      */
@@ -107,13 +108,13 @@ public interface SpreadsheetReader {
     /**
      * Reads the spreadsheet file to beans of the given type. This method will attempt to read all
      * the available sheets of the file and creates the objects of the passed type.
-     * 
+     *
      * @param <T> The Parameterized bean Class.
      * @param beanClz The Class type to deserialize the rows data
      * @param file {@link File} object of the spreadsheet file
-     * 
+     *
      * @return a {@link List} of objects of the parameterized type
-     * 
+     *
      * @throws SpreadsheetReadException an exception is thrown in cases where the file data is not
      *         readable or row data to bean mapping failed.
      */
@@ -123,13 +124,13 @@ public interface SpreadsheetReader {
     /**
      * Reads the spreadsheet file to beans of the given type. This method will attempt to read all
      * the available sheets of the file and creates the objects of the passed type.
-     * 
+     *
      * @param <T> The Parameterized bean Class.
      * @param beanClz The Class type to deserialize the rows data
      * @param is {@link InputStream} of the spreadsheet file
-     * 
+     *
      * @return a {@link List} of objects of the parameterized type
-     * 
+     *
      * @throws SpreadsheetReadException an exception is thrown in cases where the file data is not
      *         readable or row data to bean mapping failed.
      */
@@ -139,14 +140,14 @@ public interface SpreadsheetReader {
     /**
      * Reads the spreadsheet file to beans of the given type. Note that only the requested sheet
      * (sheet numbers are indexed from 0) will be read.
-     * 
+     *
      * @param <T> The Parameterized bean Class.
      * @param beanClz beanClz The Class type to deserialize the rows data
      * @param file file {@link File} object of the spreadsheet file
      * @param sheetNo index of the Sheet to be read (index starts from 0)
-     * 
+     *
      * @return a {@link List} of objects of the parameterized type
-     * 
+     *
      * @throws SpreadsheetReadException SpreadsheetReadException an exception is thrown in cases
      *         where the file data is not readable or row data to bean mapping failed.
      */
@@ -156,14 +157,14 @@ public interface SpreadsheetReader {
     /**
      * Reads the spreadsheet file to beans of the given type. Note that only the requested sheet
      * (sheet numbers are indexed from 0) will be read.
-     * 
+     *
      * @param <T> The Parameterized bean Class.
      * @param beanClz beanClz The Class type to deserialize the rows data
      * @param is {@link InputStream} of the spreadsheet file
      * @param sheetNo index of the Sheet to be read (index starts from 0)
-     * 
+     *
      * @return a {@link List} of objects of the parameterized type
-     * 
+     *
      * @throws SpreadsheetReadException SpreadsheetReadException an exception is thrown in cases
      *         where the file data is not readable or row data to bean mapping failed.
      */

@@ -1,27 +1,24 @@
 package io.github.millij.poi.util;
 
+import io.github.millij.poi.CellEmptyException;
+import io.github.millij.poi.UnsupportedException;
+import io.github.millij.poi.ss.model.ColumnMapping;
+import io.github.millij.poi.ss.model.SheetRow;
 import io.github.millij.poi.ss.model.annotations.SheetColumn;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.beanutils.BeanUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import org.apache.commons.beanutils.BeanUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.util.*;
 
 /**
  * Spreadsheet related utilites.
  */
+@Slf4j
 public final class Spreadsheet {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(Spreadsheet.class);
 
     private Spreadsheet() {
         // Utility Class
@@ -33,7 +30,7 @@ public final class Spreadsheet {
 
     /**
      * Splits the CellReference and returns only the column reference.
-     * 
+     *
      * @param cellRef the cell reference value (ex. D3)
      * @return returns the column index "D" from the cell reference "D3"
      */
@@ -43,13 +40,12 @@ public final class Spreadsheet {
     }
 
 
-
     // Bean :: Property Utils
 
     public static Map<String, String> getPropertyToColumnNameMap(Class<?> beanType) {
         // Sanity checks
         if (beanType == null) {
-            throw new IllegalArgumentException("getColumnToPropertyMap :: Invalid ExcelBean type - " + beanType);
+            throw new IllegalArgumentException("getPropertyToColumnNameMap :: Invalid ExcelBean type - " + beanType);
         }
 
         // Property to Column name Mapping
@@ -81,22 +77,8 @@ public final class Spreadsheet {
             }
         }
 
-        LOGGER.info("Bean property to Excel Column of - {} : {}", beanType, mapping);
+        log.info("Bean property to Excel Column of - {} : {}", beanType, mapping);
         return Collections.unmodifiableMap(mapping);
-    }
-
-    public static Map<String, String> getColumnToPropertyMap(Class<?> beanType) {
-        // Column to Property Mapping
-        final Map<String, String> columnToPropMap = new HashMap<String, String>();
-
-        // Bean Property to Column Mapping
-        final Map<String, String> propToColumnMap = getPropertyToColumnNameMap(beanType);
-        for (String prop : propToColumnMap.keySet()) {
-            columnToPropMap.put(propToColumnMap.get(prop), prop);
-        }
-
-        LOGGER.info("Excel Column to property map of - {} : {}", beanType, columnToPropMap);
-        return Collections.unmodifiableMap(columnToPropMap);
     }
 
     public static List<String> getColumnNames(Class<?> beanType) {
@@ -106,9 +88,6 @@ public final class Spreadsheet {
         final ArrayList<String> columnNames = new ArrayList<>(propToColumnMap.values());
         return columnNames;
     }
-
-
-    
 
     // Read from Bean : as Row Data
     // ------------------------------------------------------------------------
@@ -158,47 +137,60 @@ public final class Spreadsheet {
     }
 
 
-
     // Write to Bean :: from Row data
     // ------------------------------------------------------------------------
 
-    public static <T> T rowAsBean(Class<T> beanClz, Map<String, String> cellProperies, Map<String, Object> cellValues) {
+    public static <T> T rowAsBean(SheetRow sheetRow, ColumnMapping<T> columnMapping) {
+
+        final Class<T> beanClz = columnMapping.getBeanClz();
         // Sanity checks
-        if (cellValues == null || cellProperies == null) {
+        if (beanClz == null || columnMapping.isEmpty() || sheetRow.isEmpty()) {
+            log.warn("Mapping row as bean failed, beanClz - {}, colRefToProperty - {}, dataRow - {}.",
+                    beanClz.getSimpleName(), columnMapping, sheetRow);
             return null;
         }
 
-        try {
-            // Create new Instance
-            T rowBean = beanClz.newInstance();
+        T rowBean = newBeanInstance(beanClz);
 
-            // Fill in the datat
-            for (String cellName : cellProperies.keySet()) {
-                String propName = cellProperies.get(cellName);
-                if (StringUtils.isEmpty(propName)) {
-                    LOGGER.debug("{} : No mathching property found for column[name] - {} ", beanClz, cellName);
-                    continue;
-                }
+        // Fill in the data
+        for (String colName : columnMapping.getCellColNames()) {
 
-                Object propValue = cellValues.get(cellName);
-                try {
-                    // Set the property value in the current row object bean
-                    BeanUtils.setProperty(rowBean, propName, propValue);
-                } catch (IllegalAccessException | InvocationTargetException ex) {
-                    String errMsg = String.format("Failed to set bean property - %s, value - %s", propName, propValue);
-                    LOGGER.error(errMsg, ex);
+            ColumnMapping.Property property = columnMapping.get(colName);
+            final String colRef = property.getColumnReference();
+            Object cellValue = sheetRow.getCell(colRef).getValue();
+
+            if (!property.isNullable()) {
+                if (cellValue == null || StringUtils.isEmpty(cellValue.toString())) {
+                    final String cellRef = colRef + sheetRow.getPhysicalRowNum();
+                    throw new CellEmptyException(cellRef, property.getColumnName());
                 }
             }
 
-            return rowBean;
-        } catch (Exception ex) {
-            String errMsg = String.format("Error while creating bean - %s, from - %s", beanClz, cellValues);
-            LOGGER.error(errMsg, ex);
-        }
+            try {
+                // Set the property value in the current row object bean
+                BeanUtils.setProperty(rowBean, property.getFieldName(), cellValue);
+            } catch (IllegalAccessException | InvocationTargetException ex) {
+                String errMsg = String.format("Failed to set bean property - %s, value - %s, sheetRow - %s.",
+                        property.getFieldName(), cellValue, sheetRow);
+                log.error(errMsg, ex);
+                throw new UnsupportedException(errMsg);
+            }
 
-        return null;
+        }
+        return rowBean;
     }
 
-
+    private static <T> T newBeanInstance(Class<T> beanClz) {
+        T rowBean;
+        try {
+            // Create new Instance
+            rowBean = beanClz.newInstance();
+        } catch (InstantiationException | IllegalAccessException ex) {
+            String errMsg = String.format("Error while creating bean - %s.", beanClz);
+            log.error(errMsg, ex);
+            throw new UnsupportedException(errMsg);
+        }
+        return rowBean;
+    }
 
 }

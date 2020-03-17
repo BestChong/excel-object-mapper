@@ -1,24 +1,18 @@
 package io.github.millij.poi.ss.handler;
 
-import io.github.millij.poi.util.Spreadsheet;
-
-import java.util.HashMap;
-import java.util.Map;
-
+import io.github.millij.poi.ss.model.SheetRow;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.xssf.eventusermodel.XSSFSheetXMLHandler.SheetContentsHandler;
 import org.apache.poi.xssf.usermodel.XSSFComment;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-
+/**
+ * @author milli, Fang Gang
+ */
+@Slf4j
 abstract class AbstractSheetContentsHandler implements SheetContentsHandler {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractSheetContentsHandler.class);
-
-    private int currentRow = 0;
-    private Map<String, Object> currentRowObj;
-
+    private SheetRow sheetRow;
 
     // Methods
     // ------------------------------------------------------------------------
@@ -27,7 +21,7 @@ abstract class AbstractSheetContentsHandler implements SheetContentsHandler {
 
     abstract void beforeRowStart(int rowNum);
 
-    abstract void afterRowEnd(int rowNum, Map<String, Object> rowObj);
+    abstract void afterRowEnd(final SheetRow sheetRow);
 
 
 
@@ -39,36 +33,33 @@ abstract class AbstractSheetContentsHandler implements SheetContentsHandler {
         // Callback
         this.beforeRowStart(rowNum);
 
-        // Handle row
-        this.currentRow = rowNum;
-        this.currentRowObj = new HashMap<String, Object>();
+        // Start handle row
+        this.sheetRow = new SheetRow(rowNum);
     }
 
     @Override
     public void endRow(int rowNum) {
         // Callback
-        this.afterRowEnd(rowNum, new HashMap<String, Object>(currentRowObj));
+        this.afterRowEnd(sheetRow);
     }
 
     @Override
     public void cell(String cellRef, String cellVal, XSSFComment comment) {
         // Sanity Checks
         if (StringUtils.isEmpty(cellRef)) {
-            LOGGER.error("Row[#] {} : Cell reference is empty - {}", currentRow, cellRef);
+            log.error("Row[#] {} : Cell reference is empty - {}", sheetRow.getRowNum(), cellRef);
             return;
         }
 
         if (StringUtils.isEmpty(cellVal)) {
-            LOGGER.warn("Row[#] {} - Cell[ref] formatted value is empty : {} - {}", currentRow, cellRef, cellVal);
+            log.warn("Row[#] {} - Cell[ref] formatted value is empty : {} - {}",
+                    sheetRow.getRowNum(), cellRef, cellVal);
             return;
         }
 
-        // CellColRef
-        String cellColRef = Spreadsheet.getCellColumnReference(cellRef);
-
-        // Set the CellValue in the Map
-        LOGGER.debug("cell - Saving Column value : {} - {}", cellColRef, cellVal);
-        currentRowObj.put(cellColRef, cellVal);
+        // Set the CellValue into the SheetRow
+        sheetRow.addCell(cellRef, cellVal);
+        log.debug("cell - Saving Column value : {} - {}", cellRef, cellVal);
     }
 
     @Override
